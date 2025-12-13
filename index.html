@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .calculadora {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            width: 300px;
+        }
+        
+        .display {
+            background: #2d3436;
+            color: #00ff00;
+            font-size: 2em;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: right;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+            word-break: break-all;
+            min-height: 60px;
+            font-weight: bold;
+        }
+        
+        .botoes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        button {
+            padding: 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #ecf0f1;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #bdc3c7;
+            transform: scale(1.05);
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .operador {
+            background: #667eea;
+            color: white;
+        }
+        
+        .operador:hover {
+            background: #764ba2;
+        }
+        
+        .igual {
+            background: #27ae60;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .igual:hover {
+            background: #229954;
+        }
+        
+        .limpar {
+            background: #e74c3c;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .limpar:hover {
+            background: #c0392b;
+        }
+        
+        .apagar {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .apagar:hover {
+            background: #d68910;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculadora">
+        <div class="display" id="display">0</div>
+        <div class="botoes">
+            <button class="limpar" onclick="limpar()">C</button>
+            <button class="apagar" onclick="apagar()">←</button>
+            <button class="operador" onclick="adicionar('/')">÷</button>
+            <button class="operador" onclick="adicionar('*')">×</button>
+            
+            <button onclick="adicionar('7')">7</button>
+            <button onclick="adicionar('8')">8</button>
+            <button onclick="adicionar('9')">9</button>
+            <button class="operador" onclick="adicionar('-')">-</button>
+            
+            <button onclick="adicionar('4')">4</button>
+            <button onclick="adicionar('5')">5</button>
+            <button onclick="adicionar('6')">6</button>
+            <button class="operador" onclick="adicionar('+')">+</button>
+            
+            <button onclick="adicionar('1')">1</button>
+            <button onclick="adicionar('2')">2</button>
+            <button onclick="adicionar('3')">3</button>
+            <button class="operador" onclick="adicionar('.')">.</button>
+            
+            <button onclick="adicionar('0')" style="grid-column: span 2;">0</button>
+            <button class="igual" onclick="calcular()">=</button>
+        </div>
+    </div>
+    
+    <script>
+        let display = document.getElementById('display');
+        let entrada = '0';
+        
+        function adicionar(valor) {
+            if (entrada === '0' && valor !== '.') {
+                entrada = valor;
+            } else if (!(valor === '.' && entrada.includes('.'))) {
+                entrada += valor;
+            }
+            atualizarDisplay();
+        }
+        
+        function limpar() {
+            entrada = '0';
+            atualizarDisplay();
+        }
+        
+        function apagar() {
+            entrada = entrada.slice(0, -1) || '0';
+            atualizarDisplay();
+        }
+        
+        function calcular() {
+            try {
+                entrada = eval(entrada).toString();
+                atualizarDisplay();
+            } catch (e) {
+                entrada = 'Erro';
+                atualizarDisplay();
+                setTimeout(() => {
+                    entrada = '0';
+                    atualizarDisplay();
+                }, 1500);
+            }
+        }
+        
+        function atualizarDisplay() {
+            display.textContent = entrada;
+        }
+    </script>
+</body>
+</html>
