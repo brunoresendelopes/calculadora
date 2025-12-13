@@ -106,8 +106,13 @@
             }
             
             // === CENÁRIO À VISTA ===
-            const valorVista = valorProduto * (1 - descontoVista / 100);
+            110
+                = valorProduto * (1 - descontoVista / 100);
             const diferencaDesconto = valorProduto - valorVista;
+            
+
+        // Quando desconto = 0%, diferencaDesconto = 0 e saldoVista ficará 0 (correto)
+            122
             
             let saldoVista = diferencaDesconto;
             for (let m = 0; m < numParcelas; m++) {
@@ -116,6 +121,7 @@
             
             // === CENÁRIO PARCELADO ===
             let saldoParcelado = valorProduto;
+        // Calcula parcelado SEMPRE, mesmo com desconto = 0. O saldo final mostra quanto sobra de caixa ao fim das parcelas.
             const parcelaMensal = valorProduto / numParcelas;
             
             let parcelaComJuros = parcelaMensal;
