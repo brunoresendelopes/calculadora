@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>À Vista vs Parcelado V2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 10px; }
+        .container { background: white; border-radius: 20px; padding: 20px; width: 100%; max-width: 550px; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { text-align: center; color: #333; font-size: 24px; margin-bottom: 30px; }
+        .section { margin-bottom: 25px; }
+        .section-title { font-size: 14px; color: #666; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 8px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; font-weight: 500; color: #333; margin-bottom: 6px; }
+        input { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; }
+        input:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 16px; font-size: 16px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
+        .btn-calcular { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-limpar { background: #f0f0f0; color: #333; }
+        .resultado { display: none; }
+        .resultado.ativo { display: block; }
+        .resultado-card { background: #f8f9ff; border-left: 4px solid #667eea; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        .resultado-titulo { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 15px; }
+        .resultado-linha { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; border-bottom: 1px solid #e0e0e0; }
+        .resultado-valor { font-weight: 600; color: #667eea; }
+        .recomendacao { margin-top: 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: 600; font-size: 16px; }
+        .recomendacao.vista { background: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50; }
+        .recomendacao.parcelado { background: #e3f2fd; color: #1565c0; border: 2px solid #2196f3; }
+        .diferenca { background: #fff9e6; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 14px; color: #666; border-left: 4px solid #ff9800; }
+        .diferenca strong { color: #ff6b00; font-size: 16px; }
+        .info { background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; border-radius: 8px; font-size: 12px; color: #666; margin-top: 15px; }
+        .info.success { background: #e8f5e9; border-left-color: #4caf50; }
+        .loading { color: #999; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 À Vista vs Parcelado V2</h1>
+        
+        <div class="section">
+            <div class="section-title">Dados da Compra</div>
+            <div class="input-group">
+                <label for="valorProduto">Valor do produto (R$)</label>
+                <input type="number" id="valorProduto" placeholder="Ex: 10000" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="descontoVista">Desconto à vista (%)</label>
+                <input type="number" id="descontoVista" placeholder="Ex: 25" min="0" max="100" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="numParcelas">Número de parcelas</label>
+                <input type="number" id="numParcelas" placeholder="Ex: 21" min="1" max="100" step="1">
+            </div>
+            <div class="input-group">
+                <label for="jurosParcelado">Juros do parcelado (% ao mês)</label>
+                <input type="number" id="jurosParcelado" placeholder="Ex: 0" min="0" step="0.1" value="0">
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Taxa de Rendimento</div>
+            <div class="input-group">
+                <label for="taxaCDI">Taxa de investimento (% ao mês)</label>
+                <input type="number" id="taxaCDI" placeholder="Ex: 1.15" min="0" step="0.01" value="1.15">
+            </div>
+            <div class="info" id="infoMensagem">
+                💡 CDI e taxa mensal são carregados automaticamente, mas você pode alterar os valores manualmente a qualquer momento.
+            </div>
+        </div>
+        
+        <button class="btn-calcular" onclick="calcular()">Calcular Simulação</button>
+        <button class="btn-limpar" onclick="limpar()">Limpar</button>
+        
+        <div class="resultado" id="resultado">
+            <div class="resultado-card">
+                <div class="resultado-titulo">📊 Resultado da Simulação</div>
+                <div class="resultado-linha">
+                    <span>Valor à vista:</span>
+                    <span class="resultado-valor" id="valorVistaRes">-</span>
+                </div>
+                <div class="resultado-linha">
+                    <span>Saldo final à vista (investido):</span>
+                    <span class="resultado-valor" id="saldoVistaRes">-</span>
+                </div>
+                <div class="resultado-linha">
+                    <span>Saldo final parcelado (investido):</span>
+                    <span class="resultado-valor" id="saldoParceladoRes">-</span>
+                </div>
+            </div>
+            <div class="diferenca">
+                <span id="diferenca"></span>
+            </div>
+            <div class="recomendacao" id="recomendacao"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Busca CDI automático ao carregar a página
+        async function carregarCDIAutomatico() {
+            const infoMensagem = document.getElementById('infoMensagem');
+            infoMensagem.innerHTML = '⏳ <span class="loading">Carregando CDI atual...</span>';
+            
+            try {
+                // Busca CDI diário da API do Banco Central (série 12)
+                const resp = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json');
+                const dados = await resp.json();
+                const cdiDiario = parseFloat(dados[0].valor.replace(',', '.')); // ex: 0.059
+                
+                // Anualiza pela convenção de 252 dias úteis
+                const cdiAnual = (Math.pow(1 + cdiDiario/100, 252) - 1) * 100;
+                
+                // Converte para equivalente mensal
+                const taxaMensal = (Math.pow(1 + cdiAnual/100, 1/12) - 1) * 100;
+                
+                // Preenche o campo com a taxa mensal
+                const campoTaxa = document.getElementById('taxaCDI');
+                if (campoTaxa) {
+                    campoTaxa.value = taxaMensal.toFixed(3);
+                }
+                
+                infoMensagem.className = 'info success';
+                infoMensagem.innerHTML = `✅ CDI atualizado automaticamente! Taxa mensal: ${taxaMensal.toFixed(3)}% (equivalente a ${cdiAnual.toFixed(2)}% ao ano). Você pode alterar manualmente se preferir.`;
+                
+            } catch (e) {
+                console.error('Erro ao carregar CDI automático', e);
+                infoMensagem.className = 'info';
+                infoMensagem.innerHTML = '⚠️ Não foi possível carregar o CDI automaticamente. Use o valor padrão ou insira manualmente.';
+            }
+        }
+        
+        function calcular() {
+            const valorProduto = parseFloat(document.getElementById('valorProduto').value) || 0;
+            const descontoVista = parseFloat(document.getElementById('descontoVista').value) || 0;
+            const numParcelas = parseInt(document.getElementById('numParcelas').value) || 0;
+            const jurosParcelado = parseFloat(document.getElementById('jurosParcelado').value) || 0;
+            const taxaCDI = parseFloat(document.getElementById('taxaCDI').value) || 0;
+            
+            if (valorProduto <= 0 || numParcelas <= 0 || taxaCDI <= 0) {
+                alert('Preencha todos os campos com valores válidos!');
+                return;
+            }
+            
+            // === CENÁRIO À VISTA ===
+            const valorVista = valorProduto * (1 - descontoVista / 100);
+            const diferencaDesconto = valorProduto - valorVista;
+            
+            let saldoVista = diferencaDesconto;
+            for (let m = 0; m < numParcelas; m++) {
+                saldoVista = saldoVista * (1 + taxaCDI / 100);
+            }
+            
+            // === CENÁRIO PARCELADO ===
+            let saldoParcelado = valorProduto;
+            const parcelaMensal = valorProduto / numParcelas;
+            
+            let parcelaComJuros = parcelaMensal;
+            if (jurosParcelado > 0) {
+                const taxa = jurosParcelado / 100;
+                parcelaComJuros = (valorProduto * taxa * Math.pow(1 + taxa, numParcelas)) / 
+                    (Math.pow(1 + taxa, numParcelas) - 1);
+            }
+            
+            for (let m = 0; m < numParcelas; m++) {
+                saldoParcelado = saldoParcelado * (1 + taxaCDI / 100);
+                saldoParcelado -= parcelaComJuros;
+            }
+            
+            // === MELHOR OPÇÃO ===
+            const saldoFinalVista = saldoVista;
+            const saldoFinalParcelado = Math.max(saldoParcelado, 0);
+            const melhorOpcao = saldoFinalVista > saldoFinalParcelado ? 'vista' : 'parcelado';
+            const diferenca = Math.abs(saldoFinalVista - saldoFinalParcelado);
+            
+            // === MOSTRAR RESULTADOS ===
+            document.getElementById('valorVistaRes').textContent = 'R$ ' + valorVista.toFixed(2).replace('.', ',');
+            document.getElementById('saldoVistaRes').textContent = 'R$ ' + saldoFinalVista.toFixed(2).replace('.', ',');
+            document.getElementById('saldoParceladoRes').textContent = 'R$ ' + saldoFinalParcelado.toFixed(2).replace('.', ',');
+            
+            const textoMelhor = melhorOpcao === 'vista' 
+                ? `✅ PAGUE À VISTA é MELHOR em R$ ${diferenca.toFixed(2).replace('.', ',')}`
+                : `✅ PARCELE é MELHOR em R$ ${diferenca.toFixed(2).replace('.', ',')}`;
+            document.getElementById('diferenca').innerHTML = `<strong>${textoMelhor}</strong>`;
+            
+            const recomendacao = document.getElementById('recomendacao');
+            if (melhorOpcao === 'vista') {
+                recomendacao.className = 'recomendacao vista';
+                recomendacao.innerHTML = '💰 PAGUE À VISTA<br><span style="font-size: 12px; margin-top: 5px; display: block;">Você ficará com mais dinheiro</span>';
+            } else {
+                recomendacao.className = 'recomendacao parcelado';
+                recomendacao.innerHTML = '📈 PARCELE<br><span style="font-size: 12px; margin-top: 5px; display: block;">O dinheiro investido rende mais</span>';
+            }
+            
+            document.getElementById('resultado').classList.add('ativo');
+        }
+        
+        function limpar() {
+            document.getElementById('valorProduto').value = '';
+            document.getElementById('descontoVista').value = '';
+            document.getElementById('numParcelas').value = '';
+            document.getElementById('jurosParcelado').value = '0';
+            document.getElementById('taxaCDI').value = '1.15';
+            document.getElementById('resultado').classList.remove('ativo');
+            // Recarrega o CDI automático
+            carregarCDIAutomatico();
+        }
+        
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') calcular();
+        });
+        
+        // Carrega CDI ao iniciar a página
+        window.addEventListener('load', carregarCDIAutomatico);
+    </script>
+</body>
+</html>
